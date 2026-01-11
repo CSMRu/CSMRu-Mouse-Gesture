@@ -24,6 +24,8 @@ const actionLabels = {
     "reload": "Reload Page",
     "reload_bypass_cache": "Reload (Bypass Cache)",
     "close_tab": "Close Current Tab",
+    "activate_left_tab": "Go to Left Tab",
+    "activate_right_tab": "Go to Right Tab",
     "scroll_top": "Scroll to Top",
     "scroll_bottom": "Scroll to Bottom",
     "scroll_up": "Scroll Up (Page)",
