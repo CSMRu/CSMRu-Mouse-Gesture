@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CSMRu Mouse Gesture",
-  "version": "0.2",
+  "version": "0.3",
   "description": "Navigate and control tabs with mouse gestures.",
   "permissions": [
     "storage",

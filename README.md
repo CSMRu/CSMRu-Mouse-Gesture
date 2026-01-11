@@ -2,6 +2,8 @@
 
 ![Icon](icons/icon128.png)
 
+![Version](https://img.shields.io/badge/version-v0.3-blue.svg)
+
 A lightweight, customizable mouse gesture extension for Google Chrome. Navigate the web faster and more efficiently with simple mouse movements.
 
 ## ✨ Features
@@ -15,7 +17,7 @@ A lightweight, customizable mouse gesture extension for Google Chrome. Navigate 
 *   **🛠️ Complete Configuration**:
     *   **Add/Remove Gestures**: Record your own custom gestures and assign actions to them.
     *   **Action Mapping**: Map specific gestures to a wide range of browser commands.
-    *   **Gesture Preview**: See the emoji representation (e.g., ➡️) and action in real-time.
+    *   **Gesture Preview**: See the visual representation (e.g., <img src="icons/arrow-right.svg" width="16" style="vertical-align: middle;" />) and action in real-time.
 *   **🚀 Performance Optimized**:
     *   **Zero-Overhead Idle**: Uses no resources when not gesturing.
     *   **Smooth Rendering**: Utilizes `requestAnimationFrame` and Canvas API for fluid, lag-free trails.
@@ -41,11 +43,11 @@ You can customize these in the Options page, but here are the defaults:
 
 | Gesture | Movement | Action |
 | :--- | :--- | :--- |
-| **⬅️** | Left | Go Back |
-| **➡️** | Right | Go Forward |
-| **⬅️➡️** | Left → Right | Reload Page |
-| **➡️⬅️** | Right → Left | Reload (Bypass Cache) |
-| **⬅️⬆️➡️⬇️⬅️** | L → U → R → D → L | Reopen Closed Tab |
+| <img src="icons/arrow-left.svg" width="20" style="vertical-align: middle;" /> | Left | Go Back |
+| <img src="icons/arrow-right.svg" width="20" style="vertical-align: middle;" /> | Right | Go Forward |
+| <img src="icons/arrow-left.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-right.svg" width="20" style="vertical-align: middle;" /> | Left → Right | Reload Page |
+| <img src="icons/arrow-right.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-left.svg" width="20" style="vertical-align: middle;" /> | Right → Left | Reload (Bypass Cache) |
+| <img src="icons/arrow-left.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-up.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-right.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-down.svg" width="20" style="vertical-align: middle;" /><img src="icons/arrow-left.svg" width="20" style="vertical-align: middle;" /> | L → U → R → D → L | Reopen Closed Tab |
 
 ## ⚙️ Usage
 

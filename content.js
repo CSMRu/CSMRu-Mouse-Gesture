@@ -149,14 +149,7 @@ function clearCanvas() {
 }
 
 
-function drawLine(p1, p2) {
-    if (!ctx) return;
-    ctx.beginPath();
-    // Context styles are already set in initCanvas
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.stroke();
-}
+
 
 
 function updatePreview(currentX, currentY) {
@@ -189,13 +182,26 @@ function updatePreview(currentX, currentY) {
 
 
 
+let lastDrawnIndex = 0;
+
 document.addEventListener('mousedown', (e) => {
     if (e.button === 2) { // Right click
         isGesturing = true;
         startX = e.clientX;
         startY = e.clientY;
         path = [{ x: startX, y: startY }];
+        lastDrawnIndex = 0;
         initCanvas();
+    }
+});
+
+// Fix: Cancel gesture if window loses focus (e.g. Alt+Tab)
+window.addEventListener('blur', () => {
+    isGesturing = false;
+    clearCanvas();
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
     }
 });
 
@@ -213,22 +219,41 @@ document.addEventListener('mousemove', (e) => {
 
     // Request a frame if not already requested
     if (!animationFrameId) {
-        animationFrameId = requestAnimationFrame(() => {
-            if (!isGesturing) {
-                animationFrameId = null;
-                return;
-            }
-            // Update preview only on animation frames to save CPU
-            updatePreview(currentX, currentY);
-            animationFrameId = null;
-        });
-    }
-
-    // Immediate drawing for minimized input lag (zero-latency feel)
-    if (path.length > 1) {
-        drawLine(path[path.length - 2], { x: currentX, y: currentY });
+        animationFrameId = requestAnimationFrame(renderFrame);
     }
 });
+
+function renderFrame() {
+    if (!isGesturing) {
+        animationFrameId = null;
+        return;
+    }
+
+    if (path.length > 1 && lastDrawnIndex < path.length - 1) {
+        if (!ctx) return;
+
+        const startIndex = Math.max(0, lastDrawnIndex);
+        ctx.beginPath();
+        // Move to the start point. 
+        // If we are continuing a line, path[startIndex] is connected to path[startIndex-1] logically,
+        // but physically we just want to draw segments from startIndex to end.
+        ctx.moveTo(path[startIndex].x, path[startIndex].y);
+
+        for (let i = startIndex + 1; i < path.length; i++) {
+            ctx.lineTo(path[i].x, path[i].y);
+        }
+        ctx.stroke();
+
+        lastDrawnIndex = path.length - 1;
+    }
+
+    const lastP = path[path.length - 1];
+    if (lastP) {
+        updatePreview(lastP.x, lastP.y);
+    }
+
+    animationFrameId = null;
+}
 
 
 let blockContextMenu = false;
@@ -261,10 +286,16 @@ document.addEventListener('mouseup', (e) => {
 
             // Reset flag after short delay to be safe
             setTimeout(() => { blockContextMenu = false; }, 100);
-        } else if (path.length > 10) {
-            // Not a valid gesture but moved enough to be intentional drag
-            blockContextMenu = true;
-            setTimeout(() => { blockContextMenu = false; }, 100);
+        } else {
+            // Not a valid gesture. 
+            // Check if it was a significant drag to block context menu.
+            // Using distance instead of array length for reliability.
+            const dist = Math.hypot(path[path.length - 1].x - path[0].x, path[path.length - 1].y - path[0].y);
+
+            if (dist > 10) {
+                blockContextMenu = true;
+                setTimeout(() => { blockContextMenu = false; }, 100);
+            }
         }
     }
 });
@@ -347,8 +378,8 @@ function analyzeGesture(points) {
 function gestureToArrows(gesture) {
     if (!gesture) return "";
     return gesture
-        .replace(/L/g, "⬅️")
-        .replace(/R/g, "➡️")
-        .replace(/U/g, "⬆️")
-        .replace(/D/g, "⬇️");
+        .replace(/L/g, "←")
+        .replace(/R/g, "→")
+        .replace(/U/g, "↑")
+        .replace(/D/g, "↓");
 }

@@ -165,7 +165,7 @@ function attachEventListeners() {
     if (els.actionSelect) els.actionSelect.addEventListener('change', checkAddValidity);
     if (els.addButton) {
         els.addButton.addEventListener('click', () => {
-            const gesture = els.detectedInput.dataset.code || els.detectedInput.value;
+            const gesture = els.detectedInput.dataset.code;
             const action = els.actionSelect.value;
 
             if (!gesture || !action) return;
@@ -179,7 +179,8 @@ function attachEventListeners() {
                 showToast("Gesture added successfully!", "success");
 
                 // Reset Form
-                els.detectedInput.value = "";
+                els.detectedInput.innerHTML = "";
+                delete els.detectedInput.dataset.code;
                 els.actionSelect.value = "";
                 els.addButton.disabled = true;
             });
@@ -199,8 +200,8 @@ function attachEventListeners() {
         });
         // Manual Input Disabled
         if (els.detectedInput) {
-            els.detectedInput.readOnly = true;
-            els.detectedInput.placeholder = "Draw gesture to record ->";
+            // Read-only logic is now handled by the div nature
+            els.detectedInput.dataset.placeholder = "Draw gesture to record ->";
         }
     }
 }
@@ -218,6 +219,8 @@ function renderGestureList() {
     } else {
         if (els.emptyMsg) els.emptyMsg.style.display = 'none';
 
+        const fragment = document.createDocumentFragment();
+
         keys.forEach(gesture => {
             const actionKey = currentActions[gesture];
             const actionLabel = actionLabels[actionKey] || actionKey;
@@ -227,7 +230,7 @@ function renderGestureList() {
             const tdGesture = document.createElement('td');
             const spanBadge = document.createElement('span');
             spanBadge.className = 'gesture-badge';
-            spanBadge.textContent = gestureToArrows(gesture);
+            spanBadge.innerHTML = gestureToIconsHTML(gesture);
             tdGesture.appendChild(spanBadge);
             tr.appendChild(tdGesture);
 
@@ -240,17 +243,18 @@ function renderGestureList() {
             const deleteBtn = document.createElement('button');
             deleteBtn.className = 'btn-delete';
             deleteBtn.setAttribute('data-gesture', gesture);
-            deleteBtn.textContent = 'Delete';
+            deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>';
             tdBtn.appendChild(deleteBtn);
             tr.appendChild(tdBtn);
 
-            els.gestureListBody.appendChild(tr);
+            fragment.appendChild(tr);
         });
 
+        els.gestureListBody.appendChild(fragment);
 
         document.querySelectorAll('.btn-delete').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const g = e.target.getAttribute('data-gesture');
+                const g = e.currentTarget.getAttribute('data-gesture'); // Use currentTarget to get the button element consistently
                 delete currentActions[g];
 
                 chrome.storage.sync.remove(g, () => {
@@ -263,7 +267,7 @@ function renderGestureList() {
 }
 
 function checkAddValidity() {
-    const gesture = els.detectedInput.dataset.code || els.detectedInput.value;
+    const gesture = els.detectedInput.dataset.code;
     const action = els.actionSelect.value;
     const isValid = gesture && gesture !== "..." && gesture !== "Too Short / Invalid" && action;
     els.addButton.disabled = !isValid;
@@ -290,7 +294,12 @@ function applyTheme(theme) {
         // Icon logic: If effective theme is dark, show Sun (to switch to light). If light, show Moon.
         const iconSpan = btn.querySelector('.icon');
         if (iconSpan) {
-            iconSpan.textContent = (effectiveTheme === 'dark') ? '☀️' : '🌙';
+            // Icon logic: If effective theme is dark, show Sun (to switch to light). If light, show Moon.
+            const sunIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>';
+            const moonIcon = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>';
+
+            iconSpan.innerHTML = (effectiveTheme === 'dark') ? sunIcon : moonIcon;
+            iconSpan.style.display = 'flex'; // Ensure alignment
         }
     }
 }
@@ -302,7 +311,9 @@ function showToast(text, type) {
 
     const toast = document.createElement('div');
     toast.className = `toast-notification ${type}`;
-    const icon = type === 'success' ? '✅' : '⚠️';
+    const icon = type === 'success'
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
     toast.innerHTML = `<span>${icon}</span> <span>${text}</span>`;
 
     document.body.appendChild(toast);
@@ -392,7 +403,7 @@ function initFullscreenRecording() {
             // Analyze
             const gesture = analyzeGesture(recPath);
             if (gesture) {
-                overlayResult.textContent = gestureToArrows(gesture);
+                overlayResult.innerHTML = gestureToIconsHTML(gesture);
                 overlayResult.dataset.code = gesture;
                 confirmBtn.disabled = false;
             } else {
@@ -413,7 +424,7 @@ function initFullscreenRecording() {
     confirmBtn.addEventListener('click', () => {
         const rawCode = overlayResult.dataset.code;
         if (rawCode && !confirmBtn.disabled) {
-            els.detectedInput.value = gestureToArrows(rawCode);
+            els.detectedInput.innerHTML = gestureToIconsHTML(rawCode);
             els.detectedInput.dataset.code = rawCode;
             checkAddValidity();
             overlay.classList.add('hidden');
@@ -468,23 +479,20 @@ function analyzeGesture(points) {
 }
 
 
-function gestureToArrows(gesture) {
+const ICONS = {
+    L: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gesture-icon"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>',
+    R: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gesture-icon"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>',
+    U: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gesture-icon"><path d="m5 12 7-7 7 7"/><path d="M12 19V5"/></svg>',
+    D: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="gesture-icon"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>'
+};
+
+function gestureToIconsHTML(gesture) {
     if (!gesture) return "";
-    return gesture
-        .replace(/L/g, "⬅️")
-        .replace(/R/g, "➡️")
-        .replace(/U/g, "⬆️")
-        .replace(/D/g, "⬇️");
+    return gesture.split('').map(char => {
+        // Only allow predefined icons (L, R, U, D) to be inserted as HTML.
+        // Everything else is ignored to prevent XSS and ensure clean UI.
+        return ICONS[char] || "";
+    }).join('');
 }
 
 
-function arrowsToGesture(input) {
-    if (!input) return "";
-    return input
-        .replace(/⬅️/g, "L")
-        .replace(/➡️/g, "R")
-        .replace(/⬆️/g, "U")
-        .replace(/⬇️/g, "D")
-        .replace(/[^LRUD]/gi, "") // Remove anything else
-        .toUpperCase();
-}
