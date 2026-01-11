@@ -1,8 +1,7 @@
 # CSMRu Mouse Gesture
 
-![Icon](icons/icon128.png)
-
-![Version](https://img.shields.io/badge/version-v0.3-blue.svg)
+| ![Icon](icons/icon128.png)<br>[![Version](https://img.shields.io/badge/version-v0.3-blue.svg?style=for-the-badge)](https://github.com/CSMRu/CSMRu-Mouse-Gesture/commits) |
+| :---: |
 
 A lightweight, customizable mouse gesture extension for Google Chrome. Navigate the web faster and more efficiently with simple mouse movements.
 
